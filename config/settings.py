@@ -94,6 +94,7 @@ CITY_GRID_MAPPING = {
     "los angeles": "US-CAL-CISO",
     "san diego": "US-CAL-CISO",
     "sacramento": "US-CAL-CISO",
+    "modesto": "US-CAL-CISO",
     "oakland": "US-CAL-CISO",
     "new york": "US-NY-NYIS",
     "manhattan": "US-NY-NYIS",
