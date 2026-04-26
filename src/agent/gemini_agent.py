@@ -39,7 +39,7 @@ class GeminiRouteAgent:
         # Initialize Gemini client
         self.client = Client(api_key=self.api_key)
         # Use stable Gemini 1.5 Flash model
-        self.model_name = 'gemini-1.5-flash'
+        self.model_name = 'models/gemini-1.5-flash-latest'
         
         print(f"✓ Gemini agent initialized with model: {self.model_name}")
     
