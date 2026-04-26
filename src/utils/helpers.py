@@ -46,6 +46,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "kansas city": (-94.5786, 39.0997),
         "memphis": (-90.0490, 35.1495),
         "oakland": (-122.2712, 37.8044),
+        "modesto": (-120.9969, 37.6391),
         "jacksonville": (-81.6557, 30.3322),
         
         # NYC Boroughs
