@@ -76,7 +76,7 @@ with st.sidebar:
     mode = st.radio(
         "Choose Mode:",
         ["🤖 AI Chat Assistant", "📊 Route Comparison"],
-        help="AI Chat uses Claude to understand natural language. Route Comparison shows all options."
+        help="AI Chat uses LLM to understand natural language. Route Comparison shows all options."
     )
     
     st.markdown("---")
@@ -252,6 +252,6 @@ else:  # Route Comparison Mode
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 2rem;">
-    Built with ❤️ for sustainable logistics | Powered by Claude AI
+    Built with ❤️ for sustainable logistics ♻️
 </div>
 """, unsafe_allow_html=True)
