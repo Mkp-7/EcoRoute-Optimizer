@@ -21,11 +21,115 @@ class Database:
         self._ensure_db_exists()
     
     def _ensure_db_exists(self):
-        """Ensure database file exists"""
+        """Ensure database and tables exist - create if missing"""
+        # Create data directory if needed
+        if not self.db_path.parent.exists():
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            print(f"Created data directory: {self.db_path.parent}")
+        
+        # Create database if it doesn't exist
         if not self.db_path.exists():
-            print(f"⚠️  Database not found at {self.db_path}")
-            print("Please run: python scripts/init_db.py")
-            raise FileNotFoundError(f"Database not initialized: {self.db_path}")
+            print(f"Creating new database at {self.db_path}")
+            conn = sqlite3.connect(self.db_path)
+            conn.close()
+            print("Database created successfully")
+        
+        # Initialize tables
+        self._init_tables()
+    
+    def _init_tables(self):
+        """Create all database tables if they don't exist"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Routes table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS routes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origin TEXT NOT NULL,
+                destination TEXT NOT NULL,
+                distance_km REAL NOT NULL,
+                mode TEXT NOT NULL,
+                cost_usd REAL NOT NULL,
+                time_hours REAL NOT NULL,
+                carbon_kg REAL NOT NULL,
+                carbon_intensity_avg REAL,
+                weather_impact REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Carbon intensity cache
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS carbon_intensity_cache (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                region TEXT NOT NULL,
+                grid_zone TEXT,
+                carbon_intensity REAL NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(region, timestamp)
+            )
+        """)
+        
+        # Vehicle types
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS vehicle_types (
+                type TEXT PRIMARY KEY,
+                fuel_type TEXT NOT NULL,
+                emissions_factor REAL NOT NULL,
+                cost_per_km REAL NOT NULL,
+                avg_speed_kmh REAL NOT NULL,
+                description TEXT
+            )
+        """)
+        
+        # Shipments
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS shipments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origin TEXT NOT NULL,
+                destination TEXT NOT NULL,
+                weight_lbs REAL NOT NULL,
+                deadline_hours REAL,
+                preference TEXT,
+                selected_route_id INTEGER,
+                carbon_saved_kg REAL,
+                cost_saved_usd REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (selected_route_id) REFERENCES routes(id)
+            )
+        """)
+        
+        # Weather cache
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS weather_cache (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                location TEXT NOT NULL,
+                temperature_c REAL,
+                wind_speed_kmh REAL,
+                wind_direction_deg REAL,
+                conditions TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(location, timestamp)
+            )
+        """)
+        
+        # Agent logs
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS agent_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                shipment_id INTEGER NOT NULL,
+                reasoning TEXT,
+                tools_called TEXT,
+                recommendation TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (shipment_id) REFERENCES shipments(id)
+            )
+        """)
+        
+        conn.commit()
+        conn.close()
+        print("Database tables initialized successfully")
     
     def get_connection(self) -> sqlite3.Connection:
         """Get database connection"""
