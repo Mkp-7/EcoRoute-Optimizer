@@ -38,7 +38,7 @@ class GeminiRouteAgent:
         
         # Initialize Gemini client
         self.client = Client(api_key=self.api_key)
-        # Use stable Gemini 1.5 Flash model
+        # Use models.generate_content compatible model name
         self.model_name = 'models/gemini-1.5-flash-latest'
         
         print(f"✓ Gemini agent initialized with model: {self.model_name}")
@@ -82,7 +82,8 @@ class GeminiRouteAgent:
         try:
             # Check if this is a shipping request
             is_shipping_query = any(word in user_message.lower() 
-                                   for word in ['ship', 'route', 'send', 'transport', 'deliver', 'freight'])
+                                   for word in ['ship', 'route', 'send', 'transport', 'deliver', 'freight', 
+                                               'lbs', 'pounds', 'from', 'to'])
             
             if is_shipping_query:
                 # Extract details
@@ -172,12 +173,8 @@ class GeminiRouteAgent:
             
             else:
                 # General question - use Gemini to answer
-                response = self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=user_message
-                )
-                
-                return response.text
+                # For now, just extract if it's a shipping query
+                return "I'm optimized for shipping route queries! Please ask me to find routes between cities.\n\nExample: 'Ship 1500 lbs from San Francisco to Chicago'"
             
         except Exception as e:
             return f"Error: {str(e)}\n\nPlease try again or rephrase your question."
