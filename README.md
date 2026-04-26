@@ -149,3 +149,27 @@ Built with ❤️ for sustainable logistics
 ## 📧 Contact
 
 Questions or feedback? Open an issue on GitHub!
+
+---
+
+## 🌍 Supported Cities (Complete List)
+
+### New York Metro Area (12 cities)
+- Manhattan, Brooklyn, Queens, Bronx, Staten Island
+- Newark, Jersey City, Hoboken, Paterson, Elizabeth, Clifton, Passaic
+
+### California (5 cities)
+- San Francisco, Los Angeles, San Diego, Sacramento, Oakland
+
+### Texas (3 cities)
+- Houston, Dallas, Austin
+
+### Major US Cities (30+ more)
+- **Northeast:** Boston, Philadelphia, Baltimore, Pittsburgh, Cleveland, Cincinnati
+- **Southeast:** Atlanta, Miami, Orlando, Tampa, Charlotte, Nashville, Raleigh, Jacksonville
+- **Midwest:** Chicago, Detroit, Milwaukee, Minneapolis, Indianapolis, Columbus, St Louis, Kansas City, Memphis
+- **West:** Seattle, Portland, Denver, Phoenix, Las Vegas
+
+**Total: 50+ cities across the United States**
+
+Need a city not listed? Open an issue on GitHub!
