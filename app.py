@@ -10,22 +10,19 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-# Check if gemini is available
+# Import required modules
 try:
-    # Try importing from the simple working version
-    try:
-        from src.agent.gemini_agent_simple import GeminiRouteAgent, GEMINI_AVAILABLE
-    except ImportError:
-        from src.agent.gemini_agent import GeminiRouteAgent, GEMINI_AVAILABLE
-    
+    from src.agent.gemini_agent import GeminiRouteAgent, GEMINI_AVAILABLE
     from src.routing.route_finder import route_finder
     from src.carbon.calculator import calculator
     from src.utils.helpers import format_currency, format_carbon, calculate_trees_equivalent
-    AI_AVAILABLE = GEMINI_AVAILABLE
-    AI_NAME = "Gemini"
 except ImportError as e:
     st.error(f"Import error: {e}")
+    st.info("Make sure all dependencies are installed: pip install -r requirements.txt")
     st.stop()
+
+AI_AVAILABLE = GEMINI_AVAILABLE
+AI_NAME = "Gemini"
 
 # Page config
 st.set_page_config(
@@ -88,9 +85,9 @@ with st.sidebar:
     st.markdown("""
     **NYC Metro:** Manhattan, Brooklyn, Queens, Bronx, Newark, Jersey City, Passaic, Clifton
     
-    **Major Cities:** San Francisco, Los Angeles, Chicago, Houston, Boston, Seattle, Miami, and 30+ more
+    **Major Cities:** San Francisco, Los Angeles, Chicago, Houston, Boston, Seattle, Miami, and 40+ more
     
-    [See full list](https://github.com/yourusername/ecoroute-optimizer)
+    [See full list](https://github.com/Mkp-7/EcoRoute-Optimizer#-supported-cities)
     """)
     
     st.markdown("---")
@@ -113,8 +110,9 @@ if mode == "🤖 AI Chat Assistant":
     
     # Check if AI is available
     if not AI_AVAILABLE:
-        st.error("Google Gemini package not installed. Install with: `pip install google-generativeai`")
+        st.error("Google Gemini package not installed. Install with: `pip install google-genai`")
         st.info("Gemini is 100% FREE with generous rate limits!")
+        st.code("pip install google-genai", language="bash")
         st.stop()
     
     # Initialize agent
