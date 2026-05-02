@@ -204,17 +204,16 @@ When users ask general questions:
 - Explain your capabilities clearly
 - If they ask about cities, mention you support 60+ major US cities including NYC metro (Manhattan, Brooklyn, Queens, Newark, Jersey City), California (SF, LA, San Diego, San Jose), and major metros across the US
 - If they ask what you can do, explain you compare shipping routes to find the best balance of cost, time, and carbon emissions
-- Always be concise and conversational
+- Always be concise and conversational (2-3 sentences max)
 - Guide them toward trying a route query like "Ship 1000 lbs from NYC to LA"
 
-Keep responses brief (2-3 sentences) unless they ask for details."""
+User question: {user_message}"""
 
+                    prompt = system_context.format(user_message=user_message)
+                    
                     response = self.client.models.generate_content(
                         model=self.model_name,
-                        contents=[
-                            {"role": "user", "parts": [{"text": system_context}]},
-                            {"role": "user", "parts": [{"text": user_message}]}
-                        ]
+                        contents=prompt
                     )
                     
                     return response.text
