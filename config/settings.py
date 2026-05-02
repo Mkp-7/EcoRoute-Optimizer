@@ -34,26 +34,33 @@ DIESEL_COST_PER_KM = 1.20
 ELECTRIC_COST_PER_KM = 0.60
 RAIL_COST_PER_KM = 0.85
 
+# Legacy constants (for backward compatibility)
+COST_PER_KM = DIESEL_COST_PER_KM
+EMISSIONS_KG_PER_KM = DIESEL_EMISSIONS_KG_PER_KM
+
 # Average speeds (km/h)
 DIESEL_SPEED_KMH = 80
 ELECTRIC_SPEED_KMH = 75
 RAIL_SPEED_KMH = 55
 
+# Legacy speed constant
+SPEED_KMH = DIESEL_SPEED_KMH
+
 # Grid carbon intensity (kg CO2 per kWh) - EPA eGRID 2023
 GRID_CARBON_INTENSITY = {
-    "US-CAL-CISO": 200,      # California
-    "US-MISO": 450,          # Midwest
-    "US-NY": 250,            # New York
-    "US-PJM": 380,           # Mid-Atlantic
-    "US-SPP": 500,           # Central
-    "US-ERCOT": 400,         # Texas
-    "US-WECC": 350,          # Western
-    "US-AVERAGE": 385        # National average
+    "US-CAL-CISO": 200,
+    "US-MISO": 450,
+    "US-NY": 250,
+    "US-PJM": 380,
+    "US-SPP": 500,
+    "US-ERCOT": 400,
+    "US-WECC": 350,
+    "US-AVERAGE": 385
 }
 
 # City to grid zone mapping
 CITY_GRID_MAPPING = {
-    # California (all use CISO grid)
+    # California
     "san francisco": "US-CAL-CISO",
     "los angeles": "US-CAL-CISO",
     "san diego": "US-CAL-CISO",
@@ -77,7 +84,7 @@ CITY_GRID_MAPPING = {
     "bronx": "US-NY",
     "staten island": "US-NY",
     
-    # New Jersey (PJM)
+    # New Jersey
     "newark": "US-PJM",
     "jersey city": "US-PJM",
     "paterson": "US-PJM",
@@ -86,7 +93,7 @@ CITY_GRID_MAPPING = {
     "passaic": "US-PJM",
     "hoboken": "US-PJM",
     
-    # Midwest (MISO)
+    # Midwest
     "chicago": "US-MISO",
     "detroit": "US-MISO",
     "milwaukee": "US-MISO",
@@ -96,12 +103,12 @@ CITY_GRID_MAPPING = {
     "st louis": "US-MISO",
     "memphis": "US-MISO",
     
-    # Texas (ERCOT)
+    # Texas
     "houston": "US-ERCOT",
     "dallas": "US-ERCOT",
     "austin": "US-ERCOT",
     
-    # Other major cities
+    # Other cities
     "seattle": "US-WECC",
     "portland": "US-WECC",
     "denver": "US-WECC",
