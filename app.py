@@ -106,7 +106,7 @@ with st.sidebar:
 
 # Main content
 if mode == "🤖 AI Chat Assistant":
-    st.header(f"💬 Chat with your Route Assistant")
+    st.header(f"💬 Hi I am your Route Assistant!")
     
     # Check if AI is available
     if not AI_AVAILABLE:
