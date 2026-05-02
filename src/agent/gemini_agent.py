@@ -1,47 +1,42 @@
 """
 Gemini AI Agent for EcoRoute Optimizer
-Compatible with google-genai v1.73.1+
+Uses google-generativeai library
 """
 
-import json
+import re
 import sys
 from pathlib import Path
-from typing import List, Dict, Optional
-import re
+from typing import Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Try new import (v1.73.1+)
 try:
-    from google.genai import Client
+    import google.generativeai as genai
     GEMINI_AVAILABLE = True
-    print("✓ Gemini package loaded successfully")
-except ImportError as e:
+except ImportError:
     GEMINI_AVAILABLE = False
-    print(f"✗ Failed to import Gemini: {e}")
+    print("Warning: google-generativeai not installed")
 
 from config.settings import GEMINI_API_KEY
 from src.routing.route_finder import route_finder
-from src.routing.optimizer import optimizer
 
 
 class GeminiRouteAgent:
-    """AI Agent using Google Gemini (Free tier)"""
+    """AI Agent using Google Gemini"""
     
     def __init__(self, api_key: str = None):
         if not GEMINI_AVAILABLE:
-            raise ImportError("google-genai package required. Install with: pip install google-genai")
+            raise ImportError("google-generativeai required. Install: pip install google-generativeai")
         
         self.api_key = api_key or GEMINI_API_KEY
-        if not self.api_key or self.api_key == "your_gemini_key_here" or not self.api_key:
+        if not self.api_key or self.api_key == "your_gemini_key_here":
             raise ValueError("Gemini API key not configured. Set GEMINI_API_KEY in .env")
         
-        # Initialize Gemini client
-        self.client = Client(api_key=self.api_key)
-        # Use the correct model name for Gemini API
-        self.model_name = 'gemini-1.5-flash'
+        # Configure Gemini
+        genai.configure(api_key=self.api_key)
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
         
-        print(f"✓ Gemini agent initialized with model: {self.model_name}")
+        print(f"✓ Gemini agent initialized with model: gemini-1.5-flash")
     
     def extract_shipping_details(self, user_message: str) -> Dict:
         """Extract shipping details from user message"""
@@ -60,7 +55,7 @@ class GeminiRouteAgent:
             details["origin"] = match.group(1).strip()
             details["destination"] = match.group(2).strip()
         else:
-            # Pattern 2: "to Y from X" (reversed order)
+            # Pattern 2: "to Y from X"
             to_from_pattern = r'to\s+([A-Za-z\s]+?)\s+from\s+([A-Za-z\s]+?)(?:\s+\d|\s*,|\s*\.|\s*\?|$)'
             match = re.search(to_from_pattern, user_message, re.IGNORECASE)
             
@@ -68,8 +63,7 @@ class GeminiRouteAgent:
                 details["destination"] = match.group(1).strip()
                 details["origin"] = match.group(2).strip()
             else:
-                # Pattern 3: Simple "X to Y" (no "from")
-                # Must come after checking for "from/to" patterns
+                # Pattern 3: "X to Y"
                 simple_pattern = r'(?:^|\s)([A-Za-z][A-Za-z\s]+?)\s+to\s+([A-Za-z][A-Za-z\s]+?)(?:\s+\d|\s*,|\s*\.|\s*\?|$)'
                 match = re.search(simple_pattern, user_message, re.IGNORECASE)
                 
@@ -88,12 +82,6 @@ class GeminiRouteAgent:
     def chat_message(self, user_message: str) -> str:
         """
         Process user message and return response
-        
-        Args:
-            user_message: User's question/request
-        
-        Returns:
-            Response text
         """
         try:
             # Check if this is a shipping request
@@ -119,7 +107,7 @@ class GeminiRouteAgent:
                     if not routes:
                         return f"Sorry, I couldn't find routes between {details['origin']} and {details['destination']}. Please check the city names and try again.\n\nSupported cities include: New York, Los Angeles, Chicago, San Francisco, Miami, Seattle, and 40+ more."
                     
-                    # Format response with proper markdown
+                    # Format response
                     response = f"I found **{len(routes)} shipping option{'s' if len(routes) > 1 else ''}** from **{details['origin']}** to **{details['destination']}** for **{details['weight_lbs']} lbs**:\n\n"
                     
                     response += "---\n\n"
@@ -129,68 +117,39 @@ class GeminiRouteAgent:
                         response += f"- **Cost:** ${route['cost_usd']:.0f}\n"
                         response += f"- **Time:** {route['time_hours']:.1f} hours ({route['time_hours']/24:.1f} days)\n"
                         response += f"- **Distance:** {route['distance_km']:.0f} km ({route['distance_km']*0.621371:.0f} miles)\n"
-                        response += f"- **Carbon:** {route['carbon_kg']:.0f} kg CO2\n"
-                        
-                        # Add route details for intermodal
-                        if 'origin_hub' in route and 'dest_hub' in route:
-                            response += f"- **Route:** Truck to {route['origin_hub'].title()} rail hub → Train to {route['dest_hub'].title()} → Truck to destination\n"
-                        
-                        response += "\n"
+                        response += f"- **Carbon:** {route['carbon_kg']:.0f} kg CO2\n\n"
                     
-                    # Add detailed comparison if multiple routes
+                    # Add comparison if multiple routes
                     if len(routes) > 1:
                         response += "---\n\n"
-                        baseline = routes[-1]  # Diesel is usually last
-                        best = routes[0]  # Best option (lowest carbon)
+                        baseline = routes[-1]
+                        best = routes[0]
                         
                         cost_saved = baseline['cost_usd'] - best['cost_usd']
                         carbon_saved = baseline['carbon_kg'] - best['carbon_kg']
-                        time_diff = best['time_hours'] - baseline['time_hours']
                         
-                        response += "### 💰 Savings Analysis\n\n"
-                        response += f"- **Cost Savings:** ${cost_saved:.0f} ({cost_saved/baseline['cost_usd']*100:.0f}% less than diesel)\n"
-                        response += f"- **Carbon Reduction:** {carbon_saved:.0f} kg CO2 ({carbon_saved/baseline['carbon_kg']*100:.0f}% cleaner)\n"
+                        if cost_saved > 0:
+                            response += f"### 💰 Savings Analysis\n\n"
+                            response += f"- **Cost Savings:** ${cost_saved:.0f} ({100*cost_saved/baseline['cost_usd']:.0f}% less than diesel)\n"
+                            response += f"- **Carbon Reduction:** {carbon_saved:.0f} kg CO2 ({100*carbon_saved/baseline['carbon_kg']:.0f}% cleaner)\n"
+                            response += f"- **Environmental Impact:** Equivalent to {carbon_saved/21:.0f} trees planted or {carbon_saved/8.89:.0f} gallons of gas saved\n\n"
                         
-                        # Add context
-                        trees = carbon_saved / 21  # 21 kg CO2 per tree per year
-                        cars = carbon_saved / 4.6  # 4.6 kg CO2 per gallon gas
-                        response += f"- **Environmental Impact:** Equivalent to **{trees:.0f} trees** planted or **{cars:.0f} gallons** of gas saved\n"
-                        
-                        if time_diff > 0:
-                            response += f"- **Trade-off:** Takes {time_diff:.0f} hours longer ({time_diff/24:.1f} extra days)\n"
-                        
-                        response += "\n"
-                    
-                    # Add recommendation with reasoning
-                    response += "---\n\n"
-                    best = routes[0]
-                    response += "### 🎯 Recommendation\n\n"
-                    
-                    if best['vehicle_type'] == 'truck_rail_truck':
-                        response += f"The **intermodal (rail) route** is your best option. Here's why:\n\n"
-                        response += f"1. **Cost-Effective:** At ${best['cost_usd']:.0f}, it's significantly cheaper than diesel trucking\n"
-                        response += f"2. **Environmentally Superior:** Rail is 3-4x more carbon-efficient than trucks\n"
-                        response += f"3. **Scalable:** Rail can handle large volumes economically\n\n"
-                        
-                        if len(routes) > 1:
-                            response += f"While it takes **{best['time_hours'] - routes[-1]['time_hours']:.0f} hours longer**, the massive cost and carbon savings make it the clear winner for most shipments. "
-                            response += f"Unless you have an urgent deadline, intermodal is the smart choice."
-                    
-                    elif best['vehicle_type'] == 'electric_truck':
-                        response += f"The **electric truck** offers the best balance - lower emissions than diesel while maintaining speed and flexibility."
-                    
-                    else:
-                        response += f"For this route and timeframe, **{best['vehicle_type'].replace('_', ' ')}** is your best option."
+                        response += "### 🎯 Recommendation\n"
+                        if best['vehicle_type'] == 'truck_rail_truck':
+                            response += f"The **intermodal route** offers the best value - dramatically lower cost and emissions. "
+                        elif best['vehicle_type'] == 'electric_truck':
+                            response += f"The **electric truck** offers the best balance - lower emissions than diesel while maintaining speed and flexibility."
+                        else:
+                            response += f"For this route, **{best['vehicle_type'].replace('_', ' ')}** is your best option."
                     
                     return response
                 else:
-                    # Ask for missing details
                     return "I'd be happy to help you find shipping routes! Please provide:\n- Origin city\n- Destination city\n- Weight (optional, defaults to 1000 lbs)\n\nExample: 'Ship 1500 lbs from New York to Los Angeles'"
             
             else:
                 # Use Gemini AI for general conversation
                 try:
-                    system_context = """You are a helpful Route Optimization Assistant for EcoRoute Optimizer.
+                    prompt = f"""You are a helpful Route Optimization Assistant for EcoRoute Optimizer.
 
 Your capabilities:
 - You help users find shipping routes between 60+ US cities
@@ -207,80 +166,22 @@ When users ask general questions:
 - Always be concise and conversational (2-3 sentences max)
 - Guide them toward trying a route query like "Ship 1000 lbs from NYC to LA"
 
-User question: {user_message}"""
+User question: {user_message}
 
-                    prompt = system_context.format(user_message=user_message)
-                    
-                    print(f"[DEBUG] Calling Gemini API for: {user_message}")
-                    print(f"[DEBUG] Model: {self.model_name}")
-                    
-                    response = self.client.models.generate_content(
-                        model=self.model_name,
-                        contents=prompt
-                    )
-                    
-                    print(f"[DEBUG] Gemini response received")
+Your response (keep it brief and friendly):"""
+
+                    response = self.model.generate_content(prompt)
                     return response.text
                     
                 except Exception as e:
-                    import traceback
                     print(f"[ERROR] Gemini API error: {str(e)}")
-                    print(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
-                    
-                    # Return the error to user so we can see it
-                    return f"Gemini API Error: {str(e)}\n\nThis helps with debugging. The error has been logged."
+                    return f"Gemini API Error: {str(e)}"
             
         except Exception as e:
             return f"Error: {str(e)}\n\nPlease try again or rephrase your question."
-    
-    def reset_conversation(self):
-        """Reset (not needed with stateless approach)"""
-        pass
 
 
-# Test function
-def test_gemini_agent():
-    """Test the Gemini AI agent"""
-    
-    print("\nTESTING GEMINI AI AGENT")
-    print("=" * 70)
-    print(f"GEMINI_AVAILABLE: {GEMINI_AVAILABLE}")
-    
-    if not GEMINI_AVAILABLE:
-        print("\n✗ google-genai package not available")
-        print("Install with: pip install google-genai")
-        return
-    
-    try:
-        print("\nInitializing agent...")
-        agent = GeminiRouteAgent()
-    except ValueError as e:
-        print(f"\n✗ ERROR: {e}")
-        print("\nPlease set your Gemini API key in .env file:")
-        print("GEMINI_API_KEY=AIza-your-key-here")
-        print("\nGet a free key at: https://aistudio.google.com/app/apikey")
-        return
-    except Exception as e:
-        print(f"\n✗ ERROR: {e}")
-        import traceback
-        traceback.print_exc()
-        return
-    
-    # Test query
-    print("\nUser Query:")
-    print("-" * 70)
-    query = "Ship 1500 lbs from San Francisco to Chicago"
-    print(query)
-    
-    print("\n\nGemini's Response:")
-    print("-" * 70)
-    
-    response = agent.chat_message(query)
-    print(response)
-    
-    print("\n" + "=" * 70)
-    print("✓ GEMINI AGENT TEST COMPLETE\n")
-
-
-if __name__ == "__main__":
-    test_gemini_agent()
+# Check if available on import
+if not GEMINI_AVAILABLE:
+    print("\n✗ google-generativeai package not available")
+    print("Install with: pip install google-generativeai")
