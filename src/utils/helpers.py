@@ -21,13 +21,71 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     Returns:
         (longitude, latitude) tuple or None
     """
+    # City name aliases (abbreviations, nicknames, variants)
+    CITY_ALIASES = {
+        # New York
+        "nyc": "new york",
+        "ny": "new york",
+        "new york city": "new york",
+        
+        # Los Angeles
+        "la": "los angeles",
+        "l.a.": "los angeles",
+        
+        # San Francisco
+        "sf": "san francisco",
+        "san fran": "san francisco",
+        "frisco": "san francisco",
+        
+        # Chicago
+        "chi": "chicago",
+        
+        # Philadelphia
+        "philly": "philadelphia",
+        
+        # Washington
+        "dc": "washington",
+        "washington dc": "washington",
+        "washington d.c.": "washington",
+        
+        # Miami
+        "mia": "miami",
+        
+        # Boston
+        "bos": "boston",
+        
+        # Seattle
+        "sea": "seattle",
+        
+        # Las Vegas
+        "vegas": "las vegas",
+        
+        # San Diego
+        "sd": "san diego",
+        
+        # San Jose
+        "sj": "san jose",
+    }
+    
     # Major US city coordinates (lon, lat)
     CITY_COORDS = {
-        # Major cities
+        # California
         "san francisco": (-122.4194, 37.7749),
         "los angeles": (-118.2437, 34.0522),
         "san diego": (-117.1611, 32.7157),
         "sacramento": (-121.4944, 38.5816),
+        "oakland": (-122.2712, 37.8044),
+        "san jose": (-121.8863, 37.3382),
+        "fresno": (-119.7871, 36.7378),
+        "long beach": (-118.1937, 33.7701),
+        "bakersfield": (-119.0187, 35.3733),
+        "anaheim": (-117.9145, 33.8366),
+        "riverside": (-117.3961, 33.9533),
+        "stockton": (-121.2908, 37.9577),
+        "irvine": (-117.8265, 33.6846),
+        "santa ana": (-117.8678, 33.7455),
+        
+        # Major cities
         "new york": (-74.0060, 40.7128),
         "chicago": (-87.6298, 41.8781),
         "houston": (-95.3698, 29.7604),
@@ -45,8 +103,6 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "washington": (-77.0369, 38.9072),
         "kansas city": (-94.5786, 39.0997),
         "memphis": (-90.0490, 35.1495),
-        "oakland": (-122.2712, 37.8044),
-        "modesto": (-120.9969, 37.6391),
         "jacksonville": (-81.6557, 30.3322),
         
         # NYC Boroughs
@@ -84,6 +140,10 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     }
     
     city_lower = city_name.lower().strip()
+    
+    # Check aliases first
+    if city_lower in CITY_ALIASES:
+        city_lower = CITY_ALIASES[city_lower]
     
     # Direct match
     if city_lower in CITY_COORDS:
