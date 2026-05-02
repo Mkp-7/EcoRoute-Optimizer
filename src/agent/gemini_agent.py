@@ -211,17 +211,24 @@ User question: {user_message}"""
 
                     prompt = system_context.format(user_message=user_message)
                     
+                    print(f"[DEBUG] Calling Gemini API for: {user_message}")
+                    print(f"[DEBUG] Model: {self.model_name}")
+                    
                     response = self.client.models.generate_content(
                         model=self.model_name,
                         contents=prompt
                     )
                     
+                    print(f"[DEBUG] Gemini response received")
                     return response.text
                     
                 except Exception as e:
-                    print(f"Gemini API error: {str(e)}")
-                    # Fallback to helpful message
-                    return "I'm here to help you find optimal shipping routes! Try asking me something like:\n• 'Ship 1000 lbs from NYC to LA'\n• 'What cities do you support?'\n• 'What can you do?'"
+                    import traceback
+                    print(f"[ERROR] Gemini API error: {str(e)}")
+                    print(f"[ERROR] Full traceback:\n{traceback.format_exc()}")
+                    
+                    # Return the error to user so we can see it
+                    return f"Gemini API Error: {str(e)}\n\nThis helps with debugging. The error has been logged."
             
         except Exception as e:
             return f"Error: {str(e)}\n\nPlease try again or rephrase your question."
