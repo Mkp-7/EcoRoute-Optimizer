@@ -34,15 +34,30 @@ DIESEL_COST_PER_KM = 1.20
 ELECTRIC_COST_PER_KM = 0.60
 RAIL_COST_PER_KM = 0.85
 
-# Legacy constants (for backward compatibility)
-COST_PER_KM = DIESEL_COST_PER_KM
-EMISSIONS_KG_PER_KM = DIESEL_EMISSIONS_KG_PER_KM
-
 # Average speeds (km/h)
 DIESEL_SPEED_KMH = 80
 ELECTRIC_SPEED_KMH = 75
 RAIL_SPEED_KMH = 55
+
+# Dictionary format for AVERAGE_SPEEDS (some files use this)
+AVERAGE_SPEEDS = {
+    "diesel_truck": 80,
+    "electric_truck": 75,
+    "rail": 65,
+    "intermodal": 55,
+}
+
+# Dictionary format for COST_PER_KM (some files use this)
+COST_PER_KM = {
+    "diesel_truck": 1.20,
+    "electric_truck": 1.15,
+    "rail": 0.45,
+    "intermodal": 0.85,
+}
+
+# Legacy single-value constants (backward compatibility)
 SPEED_KMH = DIESEL_SPEED_KMH
+EMISSIONS_KG_PER_KM = DIESEL_EMISSIONS_KG_PER_KM
 
 # Grid carbon intensity (kg CO2 per kWh) - EPA eGRID 2023
 GRID_CARBON_INTENSITY = {
