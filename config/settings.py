@@ -42,8 +42,6 @@ EMISSIONS_KG_PER_KM = DIESEL_EMISSIONS_KG_PER_KM
 DIESEL_SPEED_KMH = 80
 ELECTRIC_SPEED_KMH = 75
 RAIL_SPEED_KMH = 55
-
-# Legacy speed constant
 SPEED_KMH = DIESEL_SPEED_KMH
 
 # Grid carbon intensity (kg CO2 per kWh) - EPA eGRID 2023
@@ -131,3 +129,18 @@ CITY_GRID_MAPPING = {
     "jacksonville": "US-PJM",
     "raleigh": "US-PJM",
 }
+
+# Rail hubs for intermodal routing
+RAIL_HUBS = [
+    "chicago",
+    "kansas city",
+    "memphis",
+    "dallas",
+    "los angeles",
+    "oakland",
+    "seattle",
+    "atlanta",
+    "jacksonville",
+    "newark",
+    "philadelphia",
+]
