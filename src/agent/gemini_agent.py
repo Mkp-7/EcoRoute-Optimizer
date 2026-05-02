@@ -38,8 +38,8 @@ class GeminiRouteAgent:
         
         # Initialize Gemini client
         self.client = Client(api_key=self.api_key)
-        # Use models.generate_content compatible model name
-        self.model_name = 'models/gemini-1.5-flash-latest'
+        # Use the correct model name for Gemini API
+        self.model_name = 'gemini-1.5-flash'
         
         print(f"✓ Gemini agent initialized with model: {self.model_name}")
     
