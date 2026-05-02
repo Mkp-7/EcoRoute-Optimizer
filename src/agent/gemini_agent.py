@@ -52,14 +52,21 @@ class GeminiRouteAgent:
             "deadline_hours": None
         }
         
-        # Simple pattern matching
-        # Look for "from X to Y" or "X to Y"
+        # Pattern 1: "from X to Y"
         from_to_pattern = r'from\s+([A-Za-z\s]+?)\s+to\s+([A-Za-z\s]+?)(?:\s|,|\.|\?|$)'
         match = re.search(from_to_pattern, user_message, re.IGNORECASE)
         
         if match:
             details["origin"] = match.group(1).strip()
             details["destination"] = match.group(2).strip()
+        else:
+            # Pattern 2: "to Y from X" (reversed order)
+            to_from_pattern = r'to\s+([A-Za-z\s]+?)\s+from\s+([A-Za-z\s]+?)(?:\s|,|\.|\?|$)'
+            match = re.search(to_from_pattern, user_message, re.IGNORECASE)
+            
+            if match:
+                details["destination"] = match.group(1).strip()
+                details["origin"] = match.group(2).strip()
         
         # Look for weight
         weight_pattern = r'(\d+)\s*(?:lbs?|pounds?)'
