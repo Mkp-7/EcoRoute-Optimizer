@@ -188,32 +188,41 @@ class GeminiRouteAgent:
                     return "I'd be happy to help you find shipping routes! Please provide:\n- Origin city\n- Destination city\n- Weight (optional, defaults to 1000 lbs)\n\nExample: 'Ship 1500 lbs from New York to Los Angeles'"
             
             else:
-                # General question - provide helpful response
-                lower_msg = user_message.lower()
-                
-                # Handle greeting
-                if any(word in lower_msg for word in ['hi', 'hello', 'hey', 'greetings']):
-                    return "Hello! I'm your EcoRoute AI Assistant. I help find the most cost-effective and carbon-efficient shipping routes.\n\nTry asking me something like:\n• 'Ship 1500 lbs from New York to Los Angeles'\n• 'Route from SF to Chicago'\n• 'Send 2000 lbs to Miami'\n\nI support 60+ major US cities including NYC, LA, Chicago, SF, Boston, Seattle, and more!"
-                
-                # Handle capability questions
-                elif any(word in lower_msg for word in ['what can you', 'what do you', 'capabilities', 'what are you', 'who are you']):
-                    return "I'm an AI-powered route optimizer! Here's what I can do:\n\n• Compare shipping routes (diesel truck, electric truck, rail)\n• Calculate costs, delivery times, and carbon emissions\n• Show you potential savings and environmental impact\n• Support 60+ US cities with real-time analysis\n\nJust tell me: origin, destination, and weight.\nExample: 'Ship 1000 lbs from NYC to LA'"
-                
-                # Handle thank you
-                elif any(word in lower_msg for word in ['thank', 'thanks', 'appreciate']):
-                    return "You're welcome! Let me know if you need help with any other shipping routes."
-                
-                # Handle weather/info requests
-                elif 'weather' in lower_msg or 'temperature' in lower_msg:
-                    return "I use weather data (like wind speed) to adjust fuel efficiency calculations in my route analysis. However, I'm primarily focused on shipping route optimization.\n\nWant to see how weather affects shipping costs? Try: 'Ship 1000 lbs from [city] to [city]'"
-                
-                # Handle cities question
-                elif 'cities' in lower_msg or 'where' in lower_msg or 'locations' in lower_msg:
-                    return "I support 60+ major US cities including:\n\n• NYC area: New York, Brooklyn, Queens, Newark, Jersey City\n• California: San Francisco, Los Angeles, San Diego, San Jose\n• Major metros: Chicago, Houston, Dallas, Boston, Seattle, Miami, Atlanta\n• And many more!\n\nYou can use abbreviations like NYC, LA, SF, CHI, etc.\n\nTry a route: 'Ship from NYC to LA'"
-                
-                # Default for other questions
-                else:
-                    return "I'm optimized for shipping route queries, but I'm happy to help!\n\nYou can ask me to:\n• Find routes between cities\n• Compare costs and emissions\n• Show environmental impact\n\nExample: 'Ship 1500 lbs from San Francisco to Chicago'\n\nOr ask me what cities I support!"
+                # Use Gemini AI for general conversation
+                try:
+                    system_context = """You are a helpful Route Optimization Assistant for EcoRoute Optimizer.
+
+Your capabilities:
+- You help users find shipping routes between 60+ US cities
+- You compare diesel trucks, electric vehicles, and intermodal rail options
+- You calculate costs, delivery times, and carbon emissions
+- You support cities like NYC, LA, SF, Chicago, Boston, Houston, Miami, Atlanta, Seattle, and 50+ more
+- Users can use abbreviations (NYC, LA, SF, etc.)
+
+When users ask general questions:
+- Be friendly and helpful
+- Explain your capabilities clearly
+- If they ask about cities, mention you support 60+ major US cities including NYC metro (Manhattan, Brooklyn, Queens, Newark, Jersey City), California (SF, LA, San Diego, San Jose), and major metros across the US
+- If they ask what you can do, explain you compare shipping routes to find the best balance of cost, time, and carbon emissions
+- Always be concise and conversational
+- Guide them toward trying a route query like "Ship 1000 lbs from NYC to LA"
+
+Keep responses brief (2-3 sentences) unless they ask for details."""
+
+                    response = self.client.models.generate_content(
+                        model=self.model_name,
+                        contents=[
+                            {"role": "user", "parts": [{"text": system_context}]},
+                            {"role": "user", "parts": [{"text": user_message}]}
+                        ]
+                    )
+                    
+                    return response.text
+                    
+                except Exception as e:
+                    print(f"Gemini API error: {str(e)}")
+                    # Fallback to helpful message
+                    return "I'm here to help you find optimal shipping routes! Try asking me something like:\n• 'Ship 1000 lbs from NYC to LA'\n• 'What cities do you support?'\n• 'What can you do?'"
             
         except Exception as e:
             return f"Error: {str(e)}\n\nPlease try again or rephrase your question."
