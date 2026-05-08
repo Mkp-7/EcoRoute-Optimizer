@@ -21,7 +21,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     Returns:
         (longitude, latitude) tuple or None
     """
-    # City name aliases (abbreviations, nicknames, variants)
+    # State to major city mapping
     STATE_TO_CITY = {
         "california": "los angeles",
         "ca": "los angeles",
@@ -49,11 +49,155 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "pa": "philadelphia",
         "ohio": "columbus",
         "michigan": "detroit",
+        "mi": "detroit",
         "minnesota": "minneapolis",
+        "mn": "minneapolis",
         "missouri": "st louis",
+        "mo": "st louis",
         "tennessee": "nashville",
+        "tn": "nashville",
         "north carolina": "charlotte",
         "nc": "charlotte",
+        "south carolina": "charleston",
+        "sc": "charleston",
+        "louisiana": "new orleans",
+        "la": "new orleans",  # Note: LA also means Los Angeles
+        "alabama": "birmingham",
+        "al": "birmingham",
+        "kentucky": "louisville",
+        "ky": "louisville",
+        "oklahoma": "oklahoma city",
+        "ok": "oklahoma city",
+        "utah": "salt lake city",
+        "ut": "salt lake city",
+        "new mexico": "albuquerque",
+        "nm": "albuquerque",
+        "virginia": "richmond",
+        "va": "richmond",
+        "maryland": "baltimore",
+        "md": "baltimore",
+        "wisconsin": "milwaukee",
+        "wi": "milwaukee",
+        "indiana": "indianapolis",
+        "in": "indianapolis",
+        "connecticut": "hartford",
+        "ct": "hartford",
+        "iowa": "des moines",
+        "ia": "des moines",
+        "kansas": "kansas city",
+        "ks": "kansas city",
+        "arkansas": "little rock",
+        "ar": "little rock",
+        "mississippi": "jackson",
+        "ms": "jackson",
+        "nebraska": "omaha",
+        "ne": "omaha",
+        "rhode island": "providence",
+        "ri": "providence",
+        "new hampshire": "manchester",
+        "nh": "manchester",
+        "idaho": "boise",
+        "id": "boise",
+    }
+    
+    # City name aliases (abbreviations, nicknames, variants)
+    CITY_ALIASES = {
+        # New York
+        "nyc": "new york",
+        "ny": "new york",
+        "new york city": "new york",
+        
+        # Los Angeles
+        "la": "los angeles",
+        "l.a.": "los angeles",
+        "l a": "los angeles",
+        
+        # San Francisco
+        "sf": "san francisco",
+        "san fran": "san francisco",
+        "frisco": "san francisco",
+        "s.f.": "san francisco",
+        
+        # Chicago
+        "chi": "chicago",
+        "chi-town": "chicago",
+        
+        # Philadelphia
+        "philly": "philadelphia",
+        "phila": "philadelphia",
+        
+        # Washington
+        "dc": "washington",
+        "d.c.": "washington",
+        "washington dc": "washington",
+        "washington d.c.": "washington",
+        
+        # Miami
+        "mia": "miami",
+        
+        # Boston
+        "bos": "boston",
+        
+        # Seattle
+        "sea": "seattle",
+        
+        # Las Vegas
+        "vegas": "las vegas",
+        "lv": "las vegas",
+        
+        # San Diego
+        "sd": "san diego",
+        
+        # San Jose
+        "sj": "san jose",
+        
+        # Phoenix
+        "phx": "phoenix",
+        
+        # Dallas
+        "dfw": "dallas",
+        
+        # Houston
+        "hou": "houston",
+        
+        # Atlanta
+        "atl": "atlanta",
+        
+        # Detroit
+        "det": "detroit",
+        
+        # Minneapolis
+        "minn": "minneapolis",
+        "mpls": "minneapolis",
+        
+        # New Orleans
+        "nola": "new orleans",
+        "n.o.": "new orleans",
+        
+        # Indianapolis
+        "indy": "indianapolis",
+        
+        # Portland
+        "pdx": "portland",
+        
+        # Denver
+        "den": "denver",
+        
+        # Charlotte
+        "clt": "charlotte",
+        
+        # Nashville
+        "nash": "nashville",
+        
+        # Austin
+        "atx": "austin",
+        
+        # Jacksonville
+        "jax": "jacksonville",
+        
+        # San Antonio
+        "sa": "san antonio",
+        "satx": "san antonio",
     }
     
     # Major US city coordinates (lon, lat)
@@ -166,7 +310,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "spokane": (-117.4260, 47.6588),
         "boise": (-116.2146, 43.6150),
         
-        # South (8 cities)
+        # South (9 cities)
         "new orleans": (-90.0715, 29.9511),
         "birmingham": (-86.8025, 33.5207),
         "little rock": (-92.2896, 34.7465),
@@ -175,28 +319,32 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "mobile": (-88.0399, 30.6954),
         "shreveport": (-93.7502, 32.5252),
         "baton rouge": (-91.1871, 30.4515),
+        "oklahoma city": (-97.5164, 35.4676),
+        
+        # Additional cities
+        "manchester": (-71.5381, 42.9956),
     }
     
     city_lower = city_name.lower().strip()
     
-    # Check aliases first
+    # Remove state suffix if present (e.g., "Seattle, WA" -> "Seattle")
+    if ',' in city_lower:
+        city_lower = city_lower.split(',')[0].strip()
+    
+    # Check if it's a state name FIRST (before aliases)
+    # Special handling for "LA" - prefer Los Angeles over Louisiana
+    if city_lower == "la":
+        city_lower = "los angeles"
+    elif city_lower in STATE_TO_CITY:
+        city_lower = STATE_TO_CITY[city_lower]
+    
+    # Check city aliases
     if city_lower in CITY_ALIASES:
         city_lower = CITY_ALIASES[city_lower]
     
     # Direct match
     if city_lower in CITY_COORDS:
         return CITY_COORDS[city_lower]
-    
-    # Try to extract city name if formatted like "City, State"
-    if ',' in city_lower:
-        city_part = city_lower.split(',')[0].strip()
-        
-        # Check if the city part is an alias
-        if city_part in CITY_ALIASES:
-            city_part = CITY_ALIASES[city_part]
-        
-        if city_part in CITY_COORDS:
-            return CITY_COORDS[city_part]
     
     # Try to find partial match
     for city_key, coords in CITY_COORDS.items():
@@ -370,6 +518,13 @@ if __name__ == "__main__":
     
     la = geocode_city("los angeles")
     print(f"Los Angeles coordinates: {la}")
+    
+    # Test state mapping
+    ca = geocode_city("california")
+    print(f"California (→ LA) coordinates: {ca}")
+    
+    tx = geocode_city("texas")
+    print(f"Texas (→ Houston) coordinates: {tx}")
     
     # Test distance
     if sf and la:
