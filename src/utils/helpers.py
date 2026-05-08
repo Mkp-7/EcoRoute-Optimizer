@@ -22,103 +22,38 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         (longitude, latitude) tuple or None
     """
     # City name aliases (abbreviations, nicknames, variants)
-    CITY_ALIASES = {
-        # New York
-        "nyc": "new york",
-        "ny": "new york",
-        "new york city": "new york",
-        
-        # Los Angeles
-        "la": "los angeles",
-        "l.a.": "los angeles",
-        "l a": "los angeles",
-        
-        # San Francisco
-        "sf": "san francisco",
-        "san fran": "san francisco",
-        "frisco": "san francisco",
-        "s.f.": "san francisco",
-        
-        # Chicago
-        "chi": "chicago",
-        "chi-town": "chicago",
-        
-        # Philadelphia
-        "philly": "philadelphia",
-        "phila": "philadelphia",
-        
-        # Washington
-        "dc": "washington",
-        "d.c.": "washington",
-        "washington dc": "washington",
-        "washington d.c.": "washington",
-        
-        # Miami
-        "mia": "miami",
-        
-        # Boston
-        "bos": "boston",
-        
-        # Seattle
-        "sea": "seattle",
-        
-        # Las Vegas
-        "vegas": "las vegas",
-        "lv": "las vegas",
-        
-        # San Diego
-        "sd": "san diego",
-        
-        # San Jose
-        "sj": "san jose",
-        
-        # Phoenix
-        "phx": "phoenix",
-        
-        # Dallas
-        "dfw": "dallas",
-        
-        # Houston
-        "hou": "houston",
-        
-        # Atlanta
-        "atl": "atlanta",
-        
-        # Detroit
-        "det": "detroit",
-        
-        # Minneapolis
-        "minn": "minneapolis",
-        "mpls": "minneapolis",
-        
-        # New Orleans
-        "nola": "new orleans",
-        "n.o.": "new orleans",
-        
-        # Indianapolis
-        "indy": "indianapolis",
-        
-        # Portland
-        "pdx": "portland",
-        
-        # Denver
-        "den": "denver",
-        
-        # Charlotte
-        "clt": "charlotte",
-        
-        # Nashville
-        "nash": "nashville",
-        
-        # Austin
-        "atx": "austin",
-        
-        # Jacksonville
-        "jax": "jacksonville",
-        
-        # San Antonio
-        "sa": "san antonio",
-        "satx": "san antonio",
+    STATE_TO_CITY = {
+        "california": "los angeles",
+        "ca": "los angeles",
+        "texas": "houston",
+        "tx": "houston",
+        "florida": "miami",
+        "fl": "miami",
+        "illinois": "chicago",
+        "il": "chicago",
+        "washington": "seattle",
+        "wa": "seattle",
+        "oregon": "portland",
+        "or": "portland",
+        "nevada": "las vegas",
+        "nv": "las vegas",
+        "arizona": "phoenix",
+        "az": "phoenix",
+        "colorado": "denver",
+        "co": "denver",
+        "georgia": "atlanta",
+        "ga": "atlanta",
+        "massachusetts": "boston",
+        "ma": "boston",
+        "pennsylvania": "philadelphia",
+        "pa": "philadelphia",
+        "ohio": "columbus",
+        "michigan": "detroit",
+        "minnesota": "minneapolis",
+        "missouri": "st louis",
+        "tennessee": "nashville",
+        "north carolina": "charlotte",
+        "nc": "charlotte",
     }
     
     # Major US city coordinates (lon, lat)
