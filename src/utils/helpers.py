@@ -1,3 +1,55 @@
+"""
+Utility helper functions for EcoRoute Optimizer
+"""
+
+import math
+from typing import Optional, Tuple
+
+
+def haversine_distance(coord1: Tuple[float, float], coord2: Tuple[float, float]) -> float:
+    """
+    Calculate great circle distance between two points on Earth
+    
+    Args:
+        coord1: (longitude, latitude) tuple
+        coord2: (longitude, latitude) tuple
+    
+    Returns:
+        Distance in kilometers
+    """
+    lon1, lat1 = coord1
+    lon2, lat2 = coord2
+    
+    # Convert to radians
+    lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
+    
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    # Earth radius in km
+    r = 6371
+    
+    return c * r
+
+
+def estimate_road_distance(coord1: Tuple[float, float], coord2: Tuple[float, float]) -> float:
+    """
+    Estimate road distance (adds ~20% to straight line)
+    
+    Args:
+        coord1: (longitude, latitude) tuple
+        coord2: (longitude, latitude) tuple
+    
+    Returns:
+        Estimated road distance in km
+    """
+    straight_line = haversine_distance(coord1, coord2)
+    return straight_line * 1.2
+
+
 def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     """
     Get coordinates for major US cities
@@ -8,62 +60,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
     Returns:
         (longitude, latitude) tuple or None
     """
-    # State abbreviations mapping
-    STATE_ALIASES = {
-        # Full state names to abbreviations
-        "california": "CA",
-        "new york": "NY",
-        "texas": "TX",
-        "florida": "FL",
-        "illinois": "IL",
-        "pennsylvania": "PA",
-        "ohio": "OH",
-        "georgia": "GA",
-        "north carolina": "NC",
-        "michigan": "MI",
-        "new jersey": "NJ",
-        "virginia": "VA",
-        "washington": "WA",
-        "arizona": "AZ",
-        "massachusetts": "MA",
-        "tennessee": "TN",
-        "indiana": "IN",
-        "missouri": "MO",
-        "maryland": "MD",
-        "wisconsin": "WI",
-        "colorado": "CO",
-        "minnesota": "MN",
-        "south carolina": "SC",
-        "alabama": "AL",
-        "louisiana": "LA",
-        "kentucky": "KY",
-        "oregon": "OR",
-        "oklahoma": "OK",
-        "connecticut": "CT",
-        "utah": "UT",
-        "iowa": "IA",
-        "nevada": "NV",
-        "arkansas": "AR",
-        "mississippi": "MS",
-        "kansas": "KS",
-        "new mexico": "NM",
-        "nebraska": "NE",
-        "west virginia": "WV",
-        "idaho": "ID",
-        "hawaii": "HI",
-        "new hampshire": "NH",
-        "maine": "ME",
-        "montana": "MT",
-        "rhode island": "RI",
-        "delaware": "DE",
-        "south dakota": "SD",
-        "north dakota": "ND",
-        "alaska": "AK",
-        "vermont": "VT",
-        "wyoming": "WY",
-    }
-    
-    # City name aliases (abbreviations, nicknames, variants)
+    # City name aliases
     CITY_ALIASES = {
         # New York
         "nyc": "new york",
@@ -85,7 +82,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "chi": "chicago",
         "chi-town": "chicago",
         
-        # Philadelphia
+        # Philadelphia  
         "philly": "philadelphia",
         "phila": "philadelphia",
         
@@ -135,7 +132,6 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         
         # New Orleans
         "nola": "new orleans",
-        "n.o.": "new orleans",
         
         # Indianapolis
         "indy": "indianapolis",
@@ -163,9 +159,9 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "satx": "san antonio",
     }
     
-    # Major US city coordinates (lon, lat)
+    # Major US city coordinates
     CITY_COORDS = {
-        # California (14 cities)
+        # California
         "san francisco": (-122.4194, 37.7749),
         "los angeles": (-118.2437, 34.0522),
         "san diego": (-117.1611, 32.7157),
@@ -181,7 +177,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "irvine": (-117.8265, 33.6846),
         "santa ana": (-117.8678, 33.7455),
         
-        # New York Metro (12 cities)
+        # New York Metro
         "new york": (-74.0060, 40.7128),
         "manhattan": (-73.9712, 40.7831),
         "brooklyn": (-73.9442, 40.6782),
@@ -189,7 +185,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "bronx": (-73.8648, 40.8448),
         "staten island": (-74.1502, 40.5795),
         
-        # New Jersey (7 cities)
+        # New Jersey
         "newark": (-74.1724, 40.7357),
         "jersey city": (-74.0431, 40.7178),
         "paterson": (-74.1718, 40.9168),
@@ -198,7 +194,7 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "passaic": (-74.1285, 40.8568),
         "hoboken": (-74.0323, 40.7439),
         
-        # Texas (6 cities)
+        # Texas
         "houston": (-95.3698, 29.7604),
         "dallas": (-96.7970, 32.7767),
         "austin": (-97.7431, 30.2672),
@@ -206,15 +202,13 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "fort worth": (-97.3308, 32.7555),
         "el paso": (-106.4850, 31.7619),
         
-        # Florida (6 cities)
+        # Florida
         "miami": (-80.1918, 25.7617),
         "orlando": (-81.3792, 28.5383),
         "tampa": (-82.4572, 27.9506),
         "jacksonville": (-81.6557, 30.3322),
-        "fort lauderdale": (-80.1373, 26.1224),
-        "st petersburg": (-82.6403, 27.7703),
         
-        # Midwest (15 cities)
+        # Midwest
         "chicago": (-87.6298, 41.8781),
         "detroit": (-83.0458, 42.3314),
         "milwaukee": (-87.9065, 43.0389),
@@ -226,79 +220,81 @@ def geocode_city(city_name: str) -> Optional[Tuple[float, float]]:
         "memphis": (-90.0490, 35.1495),
         "cincinnati": (-84.5120, 39.1031),
         "cleveland": (-81.6944, 41.4993),
-        "omaha": (-95.9345, 41.2565),
-        "des moines": (-93.6091, 41.5868),
-        "wichita": (-97.3301, 37.6872),
-        "toledo": (-83.5379, 41.6528),
         
-        # Northeast (10 cities)
+        # Northeast
         "boston": (-71.0589, 42.3601),
         "philadelphia": (-75.1652, 39.9526),
         "baltimore": (-76.6122, 39.2904),
         "washington": (-77.0369, 38.9072),
         "pittsburgh": (-79.9959, 40.4406),
-        "providence": (-71.4128, 41.8240),
-        "hartford": (-72.6859, 41.7658),
-        "buffalo": (-78.8784, 42.8864),
-        "rochester": (-77.6088, 43.1566),
-        "syracuse": (-76.1474, 43.0481),
         
-        # Southeast (10 cities)
+        # Southeast
         "atlanta": (-84.3880, 33.7490),
         "charlotte": (-80.8431, 35.2271),
         "nashville": (-86.7816, 36.1627),
         "raleigh": (-78.6382, 35.7796),
-        "richmond": (-77.4360, 37.5407),
-        "norfolk": (-76.2859, 36.8508),
-        "greensboro": (-79.7920, 36.0726),
-        "winston salem": (-80.2442, 36.0999),
-        "louisville": (-85.7585, 38.2527),
-        "charleston": (-79.9311, 32.7765),
         
-        # Southwest (8 cities)
+        # Southwest
         "phoenix": (-112.0740, 33.4484),
         "las vegas": (-115.1398, 36.1699),
-        "tucson": (-110.9747, 32.2226),
-        "albuquerque": (-106.6504, 35.0844),
-        "mesa": (-111.8315, 33.4152),
-        "scottsdale": (-111.9261, 33.4942),
-        "glendale": (-112.1860, 33.5387),
-        "chandler": (-111.8413, 33.3062),
+        "denver": (-104.9903, 39.7392),
         
-        # Northwest (6 cities)
+        # Northwest
         "seattle": (-122.3321, 47.6062),
         "portland": (-122.6750, 45.5152),
-        "denver": (-104.9903, 39.7392),
-        "salt lake city": (-111.8910, 40.7608),
-        "spokane": (-117.4260, 47.6588),
-        "boise": (-116.2146, 43.6150),
-        
-        # South (8 cities)
-        "new orleans": (-90.0715, 29.9511),
-        "birmingham": (-86.8025, 33.5207),
-        "little rock": (-92.2896, 34.7465),
-        "jackson": (-90.1848, 32.2988),
-        "montgomery": (-86.3007, 32.3668),
-        "mobile": (-88.0399, 30.6954),
-        "shreveport": (-93.7502, 32.5252),
-        "baton rouge": (-91.1871, 30.4515),
     }
     
     city_lower = city_name.lower().strip()
     
-    # Remove state suffixes if present (e.g., "Seattle, WA" -> "Seattle")
+    # Remove state suffix
     if ',' in city_lower:
-        city_part = city_lower.split(',')[0].strip()
-    else:
-        city_part = city_lower
+        city_lower = city_lower.split(',')[0].strip()
     
-    # Check aliases first
-    if city_part in CITY_ALIASES:
-        city_part = CITY_ALIASES[city_part]
+    # Check aliases
+    if city_lower in CITY_ALIASES:
+        city_lower = CITY_ALIASES[city_lower]
     
-    # Direct match
-    if city_part in CITY_COORDS:
-        return CITY_COORDS[city_part]
+    # Return coordinates
+    return CITY_COORDS.get(city_lower)
+
+
+def calculate_distance(origin: str, destination: str) -> Optional[float]:
+    """Calculate distance between cities in km"""
+    origin_coords = geocode_city(origin)
+    dest_coords = geocode_city(destination)
     
-    # If not found, return None
-    return None
+    if not origin_coords or not dest_coords:
+        return None
+    
+    return estimate_road_distance(origin_coords, dest_coords)
+
+
+def format_currency(amount: float) -> str:
+    """Format currency"""
+    return f"${amount:,.2f}"
+
+
+def format_carbon(kg: float) -> str:
+    """Format carbon emissions"""
+    if kg >= 1000:
+        return f"{kg/1000:.2f} tons CO2"
+    return f"{kg:.0f} kg CO2"
+
+
+def calculate_trees_equivalent(carbon_kg: float) -> float:
+    """Calculate tree planting equivalent (21 kg CO2 per tree/year)"""
+    return carbon_kg / 21.0
+
+
+def format_distance(km: float) -> str:
+    """Format distance"""
+    miles = km * 0.621371
+    return f"{km:.0f} km ({miles:.0f} miles)"
+
+
+def format_time(hours: float) -> str:
+    """Format time"""
+    days = hours / 24
+    if days >= 1:
+        return f"{hours:.1f} hours ({days:.1f} days)"
+    return f"{hours:.1f} hours"
