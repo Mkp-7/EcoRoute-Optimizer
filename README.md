@@ -164,7 +164,7 @@ Questions or feedback? Open an issue on GitHub!
 ### Texas (3 cities)
 - Houston, Dallas, Austin
 
-### Major US Cities (30+ more)
+### Major US Cities (100+ more)
 - **Northeast:** Boston, Philadelphia, Baltimore, Pittsburgh, Cleveland, Cincinnati
 - **Southeast:** Atlanta, Miami, Orlando, Tampa, Charlotte, Nashville, Raleigh, Jacksonville
 - **Midwest:** Chicago, Detroit, Milwaukee, Minneapolis, Indianapolis, Columbus, St Louis, Kansas City, Memphis
