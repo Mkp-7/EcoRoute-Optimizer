@@ -16,7 +16,7 @@ EcoRoute Optimizer helps logistics companies reduce shipping costs by up to **62
 - 📊 **Multi-Objective Optimization** - Balances cost, time, and carbon emissions
 - 🚂 **Intermodal Routing** - Truck + Rail combinations for long-distance efficiency
 - 🌍 **Carbon Tracking** - EPA SmartWay methodology for accurate emissions
-- 📍 **50+ US Cities** - Major metros, NYC area, and regional hubs
+- 📍 **100+ US Cities** - Major metros, NYC area, and regional hubs
 - ⚡ **Real-Time Analysis** - Instant route generation and recommendations
 
 ---
